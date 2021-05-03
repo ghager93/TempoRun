@@ -15,15 +15,33 @@ def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_wind
     if stft_hop_length is None:
         stft_hop_length = int(0.01 * fs)
     if h_freq_window_length is None:
-        h_freq_window_length = int(stft_window_length / 4)
+        h_freq_window_length = 6
     if p_time_window_length is None:
-        p_time_window_length = int(np.min((10, len(arr)//2)))
+        p_time_window_length = 10
 
     freq, _, x = signal.stft(arr, fs, nperseg=stft_window_length, noverlap=(stft_window_length - stft_hop_length))
     sxx = abs(x)**2
     sxx_harmonic = harm_perc_separator.hpr_spectrogram(sxx, factor, h_freq_window_length, p_time_window_length)[0]
 
-    return zero_crossing_rate.tf_zcr(x, freq)
+    return zero_crossing_rate.tf_zcr(sxx_harmonic, freq)
+
+
+def hcr_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_length=None,
+                 stft_window_length=None, stft_hop_length=None):
+    if stft_window_length is None:
+        stft_window_length = int(0.03 * fs)
+    if stft_hop_length is None:
+        stft_hop_length = int(0.01 * fs)
+    if h_freq_window_length is None:
+        h_freq_window_length = 6
+    if p_time_window_length is None:
+        p_time_window_length = 10
+
+    freq, _, x = signal.stft(arr, fs, nperseg=stft_window_length, noverlap=(stft_window_length - stft_hop_length))
+    sxx = abs(x)**2
+    h, p, r = harm_perc_separator.hpr_spectrogram(sxx, factor, h_freq_window_length, p_time_window_length)
+
+    return zero_crossing_rate.tf_zcr(h, freq), zero_crossing_rate.tf_zcr(p, freq), zero_crossing_rate.tf_zcr(r, freq)
 
 
 def decimate_median_filter(arr, fs=22050, decimate_fs=450, window_length=None):
@@ -32,4 +50,4 @@ def decimate_median_filter(arr, fs=22050, decimate_fs=450, window_length=None):
 
     arr = signal.resample(arr, int(len(arr) * decimate_fs / fs))
 
-    return filters.median_filter(arr, window_length)
+    return filters.median_filter(abs(arr), window_length)
