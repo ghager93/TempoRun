@@ -26,7 +26,7 @@ def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_wind
     return zero_crossing_rate.tf_zcr(sxx_harmonic, freq)
 
 
-def hcr_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_length=None,
+def hpr_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_length=None,
                  stft_window_length=None, stft_hop_length=None):
     if stft_window_length is None:
         stft_window_length = int(0.03 * fs)
