@@ -31,3 +31,5 @@ def decimate_median_filter(arr, fs=22050, decimate_fs=450, window_length=None):
         window_length = int(0.03 * decimate_fs)
 
     arr = signal.resample(arr, int(len(arr) * decimate_fs / fs))
+
+    return filters.median_filter(arr, window_length)
