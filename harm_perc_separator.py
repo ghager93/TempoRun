@@ -31,6 +31,11 @@ def separate_hp(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_windo
 
 
 def hpr_spectrogram(sxx, factor=1, h_freq_window_length=None, p_time_window_length=None):
+    if h_freq_window_length is None:
+        h_freq_window_length = int(sxx.shape[0] / 4)
+    if p_time_window_length is None:
+        p_time_window_length = int(sxx.shape[1] / 10)
+
     h_mask = ndimage.median_filter(sxx, (1, h_freq_window_length))
     p_mask = ndimage.median_filter(sxx, (p_time_window_length, 1))
 

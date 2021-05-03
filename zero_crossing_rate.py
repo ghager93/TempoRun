@@ -21,7 +21,11 @@ def zcr_stft(arr, fs=22050, window_length=None, hop_length=None):
 
     freq, _, x = signal.stft(arr, fs, nperseg=window_length, noverlap=(window_length - hop_length))
 
-    return np.sum(freq[:, None] * abs(x), axis=0) / np.sum(abs(x))
+    return tf_zcr(x, freq)
+
+
+def tf_zcr(x, center_frequencies):
+    return np.sum(center_frequencies[:, None] * abs(x), axis=0) / np.sum(abs(x))
 
 
 def zero_interpolate(arr, scale):
