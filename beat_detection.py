@@ -15,9 +15,9 @@ def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_wind
     if stft_hop_length is None:
         stft_hop_length = int(0.01 * fs)
     if h_freq_window_length is None:
-        h_freq_window_length = 6
+        h_freq_window_length = min(6, int(len(arr)/2))
     if p_time_window_length is None:
-        p_time_window_length = 10
+        p_time_window_length = min(10, int(stft_window_length/2))
 
     freq, _, x = signal.stft(arr, fs, nperseg=stft_window_length, noverlap=(stft_window_length - stft_hop_length))
     sxx = abs(x)**2
