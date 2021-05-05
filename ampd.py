@@ -63,4 +63,31 @@ class AMPDConditions:
     def _condition_four(self):
         m5 = np.array([np.arange(self.lmin, self.lmax), ] * self.n).T + self.m3
         m5 = np.where(m5 >= len(self.x), 0, m5)
+
         return self.x[abs(self.m3)] <= self.x[abs(m5)]
+
+
+def find_peaks(arr, fs):
+    lms = local_maxima_scalogram(arr, fs)
+    lms_r = lms[:max_lms_scale(lms), :]
+
+    return np.flatnonzero(lms_stddev(lms_r) == 0)
+
+
+def local_maxima_scalogram(arr, fs):
+    lmin = int(fs/9)
+    lmax = min(fs, int(len(arr)//2))
+    conditions_matrix = AMPDConditions(arr, lmin, lmax).conditions_matrix()
+
+    return 1 + conditions_matrix * np.random.random(conditions_matrix.shape)
+
+
+def max_lms_scale(lms):
+    return np.argmin(np.sum(lms, axis=1)) + 1
+
+
+def lms_stddev(lms):
+    lms_column_sum = np.sum(lms, axis=0)
+    n = lms.shape[0]
+
+    return 1 / (n - 1) * np.sqrt(np.sum((lms - lms_column_sum / n)**2, axis=0))
