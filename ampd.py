@@ -67,26 +67,24 @@ class AMPDConditions:
         return self.x[abs(self.m3)] <= self.x[abs(m5)]
 
 
-def find_peaks(arr, fs):
-    lms = local_maxima_scalogram(arr, fs)
-    lms_r = lms[:max_lms_scale(lms), :]
+def find_peaks(arr, lag_max, lag_min=1):
+    lms = _local_maxima_scalogram(arr, lag_max, lag_min)
+    lms_r = lms[:_max_lms_scale(lms), :]
 
-    return np.flatnonzero(lms_stddev(lms_r) == 0)
+    return np.flatnonzero(_lms_stddev(lms_r) == 0)
 
 
-def local_maxima_scalogram(arr, fs):
-    lmin = int(fs/9)
-    lmax = min(fs, int(len(arr)//2))
-    conditions_matrix = AMPDConditions(arr, lmin, lmax).conditions_matrix()
+def _local_maxima_scalogram(arr, lag_max, lag_min):
+    conditions_matrix = AMPDConditions(arr, lag_min, lag_max).conditions_matrix()
 
     return 1 + conditions_matrix * np.random.random(conditions_matrix.shape)
 
 
-def max_lms_scale(lms):
+def _max_lms_scale(lms):
     return np.argmin(np.sum(lms, axis=1)) + 1
 
 
-def lms_stddev(lms):
+def _lms_stddev(lms):
     lms_column_sum = np.sum(lms, axis=0)
     n = lms.shape[0]
 
