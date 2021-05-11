@@ -17,15 +17,13 @@ def rolling_median_absolute_deviation(arr, window_length):
     print(arr_pad)
 
     s = np.sort(arr_pad[:window_length])
-    for i in range(mid, len(arr) - mid + 1):
-        medians[i - mid] = median_mid_func(s)
+    for i in range(len(arr)):
+        medians[i] = median_mid_func(s)
 
-        t = np.sort(abs(s - medians[i - mid]))
-        mads[i - mid] = median_mid_func(t)
+        t = np.sort(abs(s - medians[i]))
+        mads[i] = median_mid_func(t)
 
-        s = np.delete(s, np.searchsorted(s, arr_pad[i - window_length]))
-        s = np.insert(s, np.searchsorted(s, arr_pad[i]))
-
-    print(arr_pad)
+        s = np.delete(s, np.searchsorted(s, arr_pad[i]))
+        s = np.insert(s, np.searchsorted(s, arr_pad[i + window_length]))
 
     return mads, medians
