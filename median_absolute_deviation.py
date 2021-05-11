@@ -18,7 +18,6 @@ def _rolling_median_absolute_deviation_by_numpy(arr, window_length):
     medians = np.zeros(len(arr))
     mads = np.zeros(len(arr))
 
-    arr_pad = np.concatenate((arr_med * np.ones(mid), arr, arr_med * np.ones(mid)), axis=None)
     arr_pad = np.pad(arr, mid, mode='median')
 
     s = np.sort(arr_pad[:window_length])
@@ -41,8 +40,6 @@ def _rolling_median_absolute_deviation_by_skip_list(arr, window_length):
     # Which uses skip_list method from Raymond Hettinger - https://code.activestate.com/recipes/577073/
 
     mid = int(window_length / 2)
-    arr_med = np.median(arr)
-    arr_pad = np.concatenate((arr_med * np.ones(mid), arr, arr_med * np.ones(mid)), axis=None)
     arr_pad = np.pad(arr, mid, mode='median')
 
     medians = np.array(list(rolling.Median(arr_pad, window_length)))
@@ -50,11 +47,9 @@ def _rolling_median_absolute_deviation_by_skip_list(arr, window_length):
     if window_length % 2 == 0:
         medians = medians[:-1]
 
-    median_med = np.median(medians)
-    median_pad = np.concatenate((median_med * np.ones(mid), medians, median_med * np.ones(mid)), axis=None)
-    median_pad = np.pad(medians, mid, mode='median')
+    medians_pad = np.pad(medians, mid, mode='median')
 
-    mads = np.array(list(rolling.Median(median_pad, window_length)))
+    mads = np.array(list(rolling.Median(medians_pad, window_length)))
     if window_length % 2 == 0:
         mads = mads[:-1]
 
