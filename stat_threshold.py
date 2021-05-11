@@ -16,7 +16,6 @@ def rolling_median_absolute_deviation(arr, window_length):
     arr_pad = np.concatenate((arr_med * np.ones(mid), arr, arr_med * np.ones(mid)), axis=None)
     print(arr_pad)
 
-
     s = np.sort(arr_pad[:window_length])
     for i in range(mid, len(arr) - mid + 1):
         medians[i - mid] = median_mid_func(s)
@@ -24,7 +23,8 @@ def rolling_median_absolute_deviation(arr, window_length):
         t = np.sort(abs(s - medians[i - mid]))
         mads[i - mid] = median_mid_func(t)
 
-        s = np.sort(np.append(s[1:], arr_pad[i]))
+        s = np.delete(s, np.searchsorted(s, arr_pad[i - window_length]))
+        s = np.insert(s, np.searchsorted(s, arr_pad[i]))
 
     print(arr_pad)
 
