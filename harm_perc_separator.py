@@ -9,23 +9,23 @@ def separate_hp(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_windo
     if stft_window_length is None:
         stft_window_length = int(0.03*fs)
     if stft_hop_length is None:
-        stft_hop_length = int(0.01*fs)
+        stft_hop_length = int(0.02*fs)
     if h_freq_window_length is None:
-        h_freq_window_length = int(stft_window_length / 4)
+        h_freq_window_length = 100
     if p_time_window_length is None:
-        p_time_window_length = int(min(10, len(arr)//2))
+        p_time_window_length = 100
 
     s = signal.stft(arr, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[2]
-    h, p, r = hpr_spectrogram(abs(s)**2, h_freq_window_length, p_time_window_length)
+    h, p, r = hpr_spectrogram(abs(s), factor, h_freq_window_length, p_time_window_length)
 
     isxx = signal.istft(h, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[1], \
-           signal.istft(p, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[1], \
-           signal.istft(r, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[1]
+           signal.istft(p, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[1]
 
     if residue:
-        ret = isxx
+        ir = signal.istft(r, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[1]
+        ret = np.append(isxx, ir)
     else:
-        ret = isxx[:-1]
+        ret = isxx
 
     return ret
 
