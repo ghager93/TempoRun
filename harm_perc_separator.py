@@ -11,9 +11,9 @@ def separate_hp(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_windo
     if stft_hop_length is None:
         stft_hop_length = int(0.02*fs)
     if h_freq_window_length is None:
-        h_freq_window_length = 100
+        h_freq_window_length = min(10, int(stft_window_length / 4))
     if p_time_window_length is None:
-        p_time_window_length = 100
+        p_time_window_length = min(10, int(stft_window_length / 4))
 
     s = signal.stft(arr, nperseg=stft_window_length, noverlap=stft_window_length-stft_hop_length)[2]
     h, p, r = hpr_spectrogram(abs(s), factor, h_freq_window_length, p_time_window_length)
