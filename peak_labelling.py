@@ -39,9 +39,11 @@ def var_threshold(arr, fs):
     return np.flatnonzero(arr_filtered)
 
 
-def peak_signal(peaks, length):
+def peak_signal(peaks, length, spread=50):
     sig = np.zeros(length)
     sig[peaks] = 1
+
+    gauss = signal.gaussian(length, spread)
 
     return sig
 
