@@ -1,6 +1,7 @@
 import numpy as np
 
 from scipy import signal
+from scipy import interpolate
 
 import filters
 import zero_crossing_rate
@@ -24,7 +25,7 @@ def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_wind
     return zero_crossing_rate.tf_zcr(sxx_harmonic, freq)
 
 
-def hpr_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_length=None,
+def hpr_zcr(arr, fs=22050, factor=10, h_freq_window_length=None, p_time_window_length=None,
                  stft_window_length=None, stft_hop_length=None):
     if stft_window_length is None:
         stft_window_length = int(0.03 * fs)
@@ -36,8 +37,7 @@ def hpr_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_le
         p_time_window_length = min(100, int(stft_window_length / 2))
 
     freq, _, x = signal.stft(arr, fs, nperseg=stft_window_length, noverlap=(stft_window_length - stft_hop_length))
-    sxx = abs(x)**2
-    h, p, r = harm_perc_separator.hpr_spectrogram(sxx, factor, h_freq_window_length, p_time_window_length)
+    h, p, r = harm_perc_separator.hpr_spectrogram(abs(x), factor, h_freq_window_length, p_time_window_length)
 
     return zero_crossing_rate.tf_zcr(h, freq), zero_crossing_rate.tf_zcr(p, freq), zero_crossing_rate.tf_zcr(r, freq)
 
@@ -58,7 +58,17 @@ def percussive_separation(arr, fs=22050, factor=10, h_freq_window_length=None, p
 
 
 def zero_interp(arr, factor):
-    ret = np.zeros(int(len(arr) * factor))
-    ret[::factor] = arr
+    if factor <= 1:
+        return arr
+
+    ret = np.zeros(len(arr) * int(factor))
+    ret[::int(factor)] = arr
+    ret = np.concatenate((ret, np.zeros(int(len(arr) * factor) - len(ret))))
 
     return ret
+
+
+def interpolate_beat(arr, factor):
+    interp_f = interpolate.interp1d(np.arange(arr.size), arr)
+
+    return interp_f(np.linspace(0, arr.size-1, int(arr.size * factor)))
