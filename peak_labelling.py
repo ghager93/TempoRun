@@ -40,12 +40,12 @@ def var_threshold(arr, fs):
     return np.flatnonzero(arr_filtered)
 
 
-def peak_signal(peaks, length=None, spread=None, filter='max'):
-    if filter == 'none':
+def peak_signal(peaks, length=None, spread=None, filter_='max'):
+    if filter_ == 'none':
         return _peak_signal_non_filtered(peaks, length)
-    if filter == 'max':
+    if filter_ == 'max':
         return _peak_signal_max_filtered(peaks, spread, length)
-    if filter == 'gauss':
+    if filter_ == 'gauss':
         return _peak_signal_gaussian_filtered(peaks, spread, length)
 
 
