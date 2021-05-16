@@ -1,6 +1,7 @@
 import numpy as np
 
 from scipy import signal
+from scipy import ndimage
 
 import ampd_peak_detection
 import filters
@@ -39,13 +40,37 @@ def var_threshold(arr, fs):
     return np.flatnonzero(arr_filtered)
 
 
-def peak_signal(peaks, length, spread=50):
+def peak_signal(peaks, length=None, spread=None, filter='max'):
+    if filter == 'none':
+        return _peak_signal_non_filtered(peaks, length)
+    if filter == 'max':
+        return _peak_signal_max_filtered(peaks, spread, length)
+    if filter == 'gauss':
+        return _peak_signal_gaussian_filtered(peaks, spread, length)
+
+
+def _peak_signal_non_filtered(peaks, length=None):
+    if length is None:
+        length = 2*peaks[-1] - peaks[-2]
     sig = np.zeros(length)
     sig[peaks] = 1
-
-    gauss = signal.gaussian(length, spread)
 
     return sig
 
 
+def _peak_signal_max_filtered(peaks, length=None, spread=None):
+    if length is None:
+        length = 2*peaks[-1] - peaks[-2]
+    if spread is None:
+        spread = 0.1 * length / len(peaks)
 
+    return ndimage.maximum_filter1d(_peak_signal_non_filtered(peaks, length), spread, mode='constant')
+
+
+def _peak_signal_gaussian_filtered(peaks, length=None, spread=None):
+    if length is None:
+        length = 2*peaks[-1] - peaks[-2]
+    if spread is None:
+        spread = 0.1 * length / len(peaks)
+
+    return np.convolve(_peak_signal_non_filtered(peaks, length), signal.gaussian(np.ceil(4 * spread), spread), 'same')
