@@ -44,9 +44,9 @@ def peak_signal(peaks, length=None, spread=None, filter_='max'):
     if filter_ == 'none':
         return _peak_signal_non_filtered(peaks, length)
     if filter_ == 'max':
-        return _peak_signal_max_filtered(peaks, spread, length)
+        return _peak_signal_max_filtered(peaks, length, spread)
     if filter_ == 'gauss':
-        return _peak_signal_gaussian_filtered(peaks, spread, length)
+        return _peak_signal_gaussian_filtered(peaks, length, spread)
 
 
 def _peak_signal_non_filtered(peaks, length=None):
