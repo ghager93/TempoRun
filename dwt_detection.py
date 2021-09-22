@@ -6,7 +6,7 @@ from numpy.lib import stride_tricks
 from typing import List
 
 
-def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4) -> int:
+def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4, min_bpm: int = 80) -> int:
     '''
     Estimate the tempo (bpm) of a time-series signal.
 
@@ -14,6 +14,8 @@ def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4) -> int:
 
     :param sig: (1-D ndarray) Time-series signal. If sig is N-D, it is flattened before computation.
     :param fs: (float) Sampling frequency.
+    :param dwt_level: (int) Number of cascaded DWTs in filter bank. Default is 4.
+    :param min_bpm: (int) Returned tempo is within the range [min_bpm, 2*min_bpm].
     :return: (int) Approximate tempo (bpm).
     '''
 
@@ -33,7 +35,7 @@ def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4) -> int:
 
 
 def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length: int = None,
-                 dwt_level: int = 4) -> np.ndarray:
+                 dwt_level: int = 4, min_bpm: int = 80) -> np.ndarray:
     '''
     Estimate the tempo (bpm) of the segments of a time-series signal.
 
@@ -44,6 +46,7 @@ def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length:
     :param win_length: (int) Number of samples per segment. If None, defaults to 10 seconds (10*fs).
     :param hop_length: (int) Sample interval between segments. If None, defaults to 1 second (fs).
     :param dwt_level: (int) Number of cascaded DWTs in filter bank. Default is 4.
+    :param min_bpm: (int) Returned tempo is within the range [min_bpm, 2*min_bpm].
     :return: (np.ndarray) Series of integer approximations of the tempo (bpm).
     '''
 
@@ -74,7 +77,7 @@ def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length:
     return np.array([__dwt2bpm(segment, fs) for segment in dwt_segments])
 
 
-def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float) -> int:
+def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
     # Estimate the tempo of a segment from its dwt coefficients.
     # Coefficients are assumed to already have been downsampled to equal length.
     # dwt_coeffs should have shape (M x N). Where M is the number of DWT filters and N is the downsampled
@@ -82,7 +85,6 @@ def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float) -> int:
 
     # If tempo is found to be below min_bpm, it is assumed to be a fractional beat.
     # The tempo is doubled until it is higher than or equal to min_bpm.
-    min_bpm = 80
 
     # If tempo is found to be above max_bpm, it is assumed to be a multiple of a beat.
     # The tempo is halved until it is lower than max_bpm.
