@@ -31,7 +31,7 @@ def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4, min_bpm: int = 80) -> 
     # Coefficients downsampled all be an equal length of len(sig)/2**dwt_level
     dwt_coeffs_downsampled = np.array([dc[::2 ** i] for i, dc in enumerate(dwt_coeffs)])
 
-    return __dwt2bpm(dwt_coeffs_downsampled, fs)
+    return __dwt2bpm(dwt_coeffs_downsampled, fs, min_bpm)
 
 
 def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length: int = None,
@@ -74,7 +74,7 @@ def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length:
     dwt_segments = [__segment(dc, downsampled_win_length, downsampled_hop_length) for dc in dwt_coeffs_downsampled]
     dwt_segments = np.array(dwt_segments).transpose((1, 0, 2))
 
-    return np.array([__dwt2bpm(segment, fs) for segment in dwt_segments])
+    return np.array([__dwt2bpm(segment, fs, min_bpm) for segment in dwt_segments])
 
 
 def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
