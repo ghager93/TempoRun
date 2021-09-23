@@ -1,9 +1,10 @@
 import numpy as np
 
 from scipy import ndimage
+from typing import Dict
 
 
-def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3):
+def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3) -> Dict[int, list]:
     '''
     Returns dictionary of with a list of intervals for each tempo of the song.
     The keys are the tempos and the values are lists of lists, of the form [start, end]. Ie.
@@ -40,7 +41,7 @@ def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3)
     return interval_dict
 
 
-def __filter_tempos(tempos: np.ndarray, length: int):
+def __filter_tempos(tempos: np.ndarray, length: int) -> np.ndarray:
     # Round tempos to integers and apply a median filter.
 
     return ndimage.median_filter(tempos.astype(int), length)
