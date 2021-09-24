@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 
 from scipy import ndimage
 from typing import Dict
+from collections import namedtuple
 
 
 def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3) -> Dict[int, list]:
@@ -27,9 +29,9 @@ def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3)
     i = 0
     while i < len(tempos_filt):
         j = i
-        while (j < len(tempos_filt)) and (abs(tempos_filt[i] - tempos_filt[j]) < 3):
+        while (j < len(tempos_filt)) and (abs(tempos_filt[i] - tempos_filt[j]) < tolerance):
             j += 1
-        if (j - i) > 5:
+        if (j - i) > min_length:
             if tempos_filt[i] not in interval_dict.keys():
                 interval_dict[tempos_filt[i]] = [[i, j]]
             else:
@@ -39,6 +41,47 @@ def tempo_intervals(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3)
             i += 1
 
     return interval_dict
+
+
+def tempo_intervals_df(tempos: np.ndarray, min_length: int = 5, tolerance: int = 3) -> pd.DataFrame:
+    '''
+    Returns DataFrame of intervals for each tempo of the song. Ie.
+
+    -------------------------------------
+    |   tempo   |   start   |   stop    |
+    -------------------------------------
+    |   tempo1  |   start1  |   stop1   |
+    -------------------------------------
+    |   tempo1  |   start2  |   stop2   |
+    -------------------------------------
+    |   tempo2  |   start1  |   stop1   |
+    -------------------------------------
+    |   ...
+
+    :param tempos: (np.ndarray) The tempos of the song.
+    :param min_length: (int) Minimum length of an interval (end - start) for it to be counted.
+    :param tolerance: (int) Maxium allowable deviation from each tempo to be counted as an interval.
+    :return: Dictionary of lists of intervals (see description).
+    '''
+
+    row = namedtuple('Row', ['tempo', 'start', 'stop'])
+    row_list = []
+
+    # Pre filter tempos
+    tempos_filt = __filter_tempos(tempos, 10)
+
+    i = 0
+    while i < len(tempos_filt):
+        j = i
+        while (j < len(tempos_filt)) and (abs(tempos_filt[i] - tempos_filt[j]) < tolerance):
+            j += 1
+        if (j - i) > min_length:
+            row_list.append(row(tempos_filt[i], i, j))
+            i = j
+        else:
+            i += 1
+
+    return pd.DataFrame(row_list, columns=row._fields)
 
 
 def __filter_tempos(tempos: np.ndarray, length: int) -> np.ndarray:
