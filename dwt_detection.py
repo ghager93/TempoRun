@@ -54,10 +54,10 @@ def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length:
         sig = sig.flatten()
 
     if win_length is None:
-        win_length = 10 * fs
+        win_length = 60 * fs
 
     if hop_length is None:
-        hop_length = fs
+        hop_length = 30 * fs
 
     downsampled_win_length = win_length // (2 ** dwt_level)
     downsampled_hop_length = hop_length // (2 ** dwt_level)
