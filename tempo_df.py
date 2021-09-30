@@ -19,7 +19,7 @@ def build_from_path(path: str) -> pd.DataFrame:
 
     audios = read_audio.read_dir(path)
     tempos = [dwt_detection.tempo_series(audio, fs) for audio, fs in audios]
-    interval_dfs = tempo_intervals.tempo_intervals_df(tempos)
+    interval_dfs = [tempo_intervals.tempo_intervals_df(tempo) for tempo in tempos]
     song_names = __song_names(path)
     interval_dfs = __connect_names_to_dfs(interval_dfs, song_names)
     tempo_df = pd.concat(interval_dfs)
