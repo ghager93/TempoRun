@@ -22,7 +22,7 @@ def build_from_path(path: str) -> pd.DataFrame:
     interval_dfs = [tempo_intervals.tempo_intervals_df(tempo) for tempo in tempos]
     song_names = __song_names(path)
     interval_dfs = __connect_names_to_dfs(interval_dfs, song_names)
-    tempo_df = pd.concat(interval_dfs).reset_index()
+    tempo_df = pd.concat(interval_dfs).reset_index(drop=True)
 
     return tempo_df
 
