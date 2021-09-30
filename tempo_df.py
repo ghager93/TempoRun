@@ -19,18 +19,27 @@ def build_from_path(path: str) -> pd.DataFrame:
 
     audios = read_audio.read_dir(path)
     tempos = [dwt_detection.tempo_series(audio, fs) for audio, fs in audios]
-    interval_dbs = tempo_intervals.tempo_intervals_df(tempos)
+    interval_dfs = tempo_intervals.tempo_intervals_df(tempos)
     song_names = __song_names(path)
+    interval_dfs = __connect_names_to_dfs(interval_dfs, song_names)
+    tempo_df = pd.concat(interval_dfs)
+
+    return tempo_df
 
 
 def __song_names(path: str) -> List[str]:
     try:
         names = os.listdir(path)
-    except:
+    except FileNotFoundError:
         names = []
 
     return names
 
 
-def __connect_names_to_dbs(dbs: List[pd.DataFrame], names: List[str]) -> List[pd.DataFrame]:
-    return [db.]
+def __connect_names_to_dfs(dfs: List[pd.DataFrame], names: List[str]) -> List[pd.DataFrame]:
+    assert(len(dfs) == len(names))
+
+    for df, name in zip(dfs, names):
+        df['track'] = name
+
+    return dfs
