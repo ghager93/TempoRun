@@ -3,13 +3,14 @@ import os
 import typer
 
 from app.conf import config, ROOT_DIR
-from app.cli import list, calculate
+from app.cli import list, calculate, play
 from app.models import SQLModel
 
 
 app = typer.Typer()
 app.add_typer(list.app, name="list")
 app.add_typer(calculate.app, name="calculate")
+app.add_typer(play.app, name="play")
 
 @app.command()
 def hello(name: str):
