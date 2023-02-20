@@ -4,3 +4,6 @@ venv/
 instance/
 audio/
 nohup.out
+build/
+dist/
+*egg-info

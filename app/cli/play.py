@@ -6,7 +6,6 @@ from typing import Optional
 from datetime import datetime
 
 import typer
-import vlc
 import pydub
 
 from pydub import playback
@@ -49,8 +48,7 @@ def play(
 def _detached_mode(filename: str, duration: int = 3, offset: int = 0) -> None:
     cmd = [
         "nohup",
-        "python",
-        "entrypoint.py",
+        "./entrypoint",
         "play",
         f"--duration={duration}",
         f"--offset={offset}",
@@ -84,20 +82,20 @@ def _clear_audiopid(pid: str) -> None:
         session.commit()
 
 
-def _play_file_vlc(filename: str, duration: int = 3, offset: int = 0) -> None:
-    player = vlc.MediaPlayer(
-        utils.abs_path(os.path.join(config.get("audio_dir"), filename))
-    )
-    player.play()
-    player.audio_set_mute(True)
-    time.sleep(0.1)
-    if player.get_length() < offset * 1000:
-        raise Exception(
-            f"Offset longer than file length. Please choose smaller offset."
-        )
-    player.audio_set_mute(False)
-    player.set_time(offset * 1000)
-    time.sleep(duration)
+# def _play_file_vlc(filename: str, duration: int = 3, offset: int = 0) -> None:
+#     player = vlc.MediaPlayer(
+#         utils.abs_path(os.path.join(config.get("audio_dir"), filename))
+#     )
+#     player.play()
+#     player.audio_set_mute(True)
+#     time.sleep(0.1)
+#     if player.get_length() < offset * 1000:
+#         raise Exception(
+#             f"Offset longer than file length. Please choose smaller offset."
+#         )
+#     player.audio_set_mute(False)
+#     player.set_time(offset * 1000)
+#     time.sleep(duration)
 
 
 def _play_file_pydub(filename: str, duration: int = 3, offset: int = 0) -> None:
