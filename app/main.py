@@ -1,10 +1,17 @@
 import os
+import signal
 
 import typer
 
 from app.conf import config, ROOT_DIR
 from app.cli import list, calculate, play
-from app.models import SQLModel
+
+
+def handle_sigint_clear_audiopid() -> None:
+    play._clear_audiopid(os.getpid())
+
+
+signal.signal(signal.SIGTERM, handle_sigint_clear_audiopid)
 
 
 app = typer.Typer()
@@ -20,6 +27,7 @@ def hello(name: str):
 @app.command()
 def listaudio():
     print(os.listdir(os.path.join(ROOT_DIR, config.get("audio_dir"))))
+
 
 if __name__ == "__main__":
     app()
