@@ -17,3 +17,11 @@ class AudioFileCreate(SQLModel):
     name: str
     duration: Optional[int]
     bpm: Optional[int]
+
+
+class AudioPID(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    process_id: str
+    created_at: datetime
+    updated_at: datetime
