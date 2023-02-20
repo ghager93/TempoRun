@@ -10,6 +10,7 @@ import vlc
 import pydub
 
 from pydub import playback
+from sqlmodel import select
 
 from app import db
 from app import utils
@@ -42,6 +43,8 @@ def play(
     else:
         _play_file_pydub(filename, duration, offset)
 
+    _clear_audiopid(os.getpid())
+
 
 def _detached_mode(filename: str, duration: int = 3, offset: int = 0) -> None:
     cmd = [
@@ -69,6 +72,16 @@ def _save_audiopid_to_database(filename: str, pid: str) -> None:
     session = next(db.get_session())
     session.add(audiopid)
     session.commit()
+
+
+def _clear_audiopid(pid: str) -> None:
+    session = next(db.get_session())
+    results = session.exec(select(AudioPID).where(AudioPID.process_id == pid))
+    audiopid = results.first()
+
+    if audiopid:
+        session.delete(audiopid)
+        session.commit()
 
 
 def _play_file_vlc(filename: str, duration: int = 3, offset: int = 0) -> None:
