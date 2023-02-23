@@ -23,5 +23,6 @@ class AudioPID(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     process_id: str
+    ffplay_pid: str
     created_at: datetime
     updated_at: datetime

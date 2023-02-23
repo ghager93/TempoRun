@@ -10,6 +10,10 @@ DATABASE_URI = f"sqlite:///{config.get('db_path')}"
 engine = create_engine(DATABASE_URI, echo=True, pool_pre_ping=True, connect_args={"check_same_thread": False})
 
 
-def get_session():
+def _yield_session():
     with Session(engine) as session:
         yield session
+
+
+def get_session():
+    return next(_yield_session())

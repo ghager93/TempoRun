@@ -4,6 +4,7 @@ import time
 import subprocess
 from typing import Optional
 from datetime import datetime
+from tempfile import NamedTemporaryFile
 
 import typer
 import pydub
@@ -15,7 +16,7 @@ from app import db
 from app import utils
 from app.conf import config, ROOT_DIR
 from app.models import AudioPID
-
+from app.exceptions import ArgumentException
 
 app = typer.Typer()
 
@@ -46,34 +47,34 @@ def play(
 
 
 def _detached_mode(filename: str, duration: int = 3, offset: int = 0) -> None:
-    cmd = [
-        "nohup",
-        "./entrypoint",
-        "play",
-        f"--duration={duration}",
-        f"--offset={offset}",
-        filename,
-    ]
-    process = subprocess.Popen(cmd)
-    _save_audiopid_to_database(filename, process.pid)
+    process = subprocess.Popen(["nohup", "./entrypoint", "play-process", f"--duration={duration}", f"--offset={offset}", filename])
+
+    # Need 2 seconds to allow for ffplay process to start. 
+    time.sleep(5)
+    child_processes = _get_child_processes(str(process.pid))
+    print(child_processes)
+    _save_audiopid_to_database(filename, process.pid, child_processes[0])
     
 
-def _save_audiopid_to_database(filename: str, pid: str) -> None:
+def _save_audiopid_to_database(filename: str, pid: str, ffplay_pid: str) -> None:
     timestamp = datetime.now()
     audiopid = AudioPID(
         name=filename,
         process_id=pid,
+        ffplay_pid=ffplay_pid,
         created_at=timestamp,
         updated_at=timestamp
     )
+    print(audiopid)
+    print(audiopid.ffplay_pid)
 
-    session = next(db.get_session())
+    session = db.get_session()
     session.add(audiopid)
     session.commit()
 
 
 def _clear_audiopid(pid: str) -> None:
-    session = next(db.get_session())
+    session = db.get_session()
     results = session.exec(select(AudioPID).where(AudioPID.process_id == pid))
     audiopid = results.first()
 
@@ -82,28 +83,16 @@ def _clear_audiopid(pid: str) -> None:
         session.commit()
 
 
-# def _play_file_vlc(filename: str, duration: int = 3, offset: int = 0) -> None:
-#     player = vlc.MediaPlayer(
-#         utils.abs_path(os.path.join(config.get("audio_dir"), filename))
-#     )
-#     player.play()
-#     player.audio_set_mute(True)
-#     time.sleep(0.1)
-#     if player.get_length() < offset * 1000:
-#         raise Exception(
-#             f"Offset longer than file length. Please choose smaller offset."
-#         )
-#     player.audio_set_mute(False)
-#     player.set_time(offset * 1000)
-#     time.sleep(duration)
-
-
 def _play_file_pydub(filename: str, duration: int = 3, offset: int = 0) -> None:
-    song = pydub.AudioSegment.from_file(
+    audio = pydub.AudioSegment.from_file(
         utils.abs_path(os.path.join(config.get("audio_dir"), filename))
     )
+    
+    if offset > len(audio):
+        raise ArgumentException(f"Offset longer than file length. Please choose smaller offset. File length: {len(audio)} milliseconds.")
+    segment_end = min((offset + duration)*1000, len(audio)-1)
 
-    playback.play(song)
+    playback.play(audio[offset*1000:segment_end])
 
 
 def _get_random_audio_file() -> str:
@@ -128,3 +117,9 @@ def _get_audio_file_by_name(filename: str) -> str:
         return filename
     else:
         raise Exception(f"No file named {filename}.")
+
+
+def _get_child_processes(pid: str) -> list[str]:
+    result = subprocess.run(["pgrep", "-P", pid], capture_output=True)
+    print(result.stdout.decode("utf-8").strip())
+    return result.stdout.decode("utf-8").splitlines()

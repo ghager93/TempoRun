@@ -10,9 +10,9 @@ from app.conf import config, ROOT_DIR
 
 app = typer.Typer()
 
-@app.command()
-def create_records():
-    session = next(db.get_session())
+@app.callback(invoke_without_command=True)
+def calculate():
+    session = db.get_session()
 
     timestamp = datetime.now()
     audio_filenames = os.listdir(os.path.join(ROOT_DIR, config.get("audio_dir")))
