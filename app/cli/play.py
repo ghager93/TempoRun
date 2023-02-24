@@ -49,11 +49,9 @@ def play(
 def _detached_mode(filename: str, duration: int = 3, offset: int = 0) -> None:
     process = subprocess.Popen(["nohup", "./entrypoint", "play-process", f"--duration={duration}", f"--offset={offset}", filename])
 
-    # Need 2 seconds to allow for ffplay process to start. 
-    time.sleep(5)
-    child_processes = _get_child_processes(str(process.pid))
-    print(child_processes)
-    _save_audiopid_to_database(filename, process.pid, child_processes[0])
+    ffplay_pid = _get_child_ffplay_pid(str(process.pid))
+
+    _save_audiopid_to_database(filename, process.pid, ffplay_pid)
     
 
 def _save_audiopid_to_database(filename: str, pid: str, ffplay_pid: str) -> None:
@@ -119,7 +117,19 @@ def _get_audio_file_by_name(filename: str) -> str:
         raise Exception(f"No file named {filename}.")
 
 
-def _get_child_processes(pid: str) -> list[str]:
+def _get_child_pids(pid: str) -> list[str]:
     result = subprocess.run(["pgrep", "-P", pid], capture_output=True)
-    print(result.stdout.decode("utf-8").strip())
     return result.stdout.decode("utf-8").splitlines()
+
+
+def _get_child_ffplay_pid(parent_pid: str) -> str:
+    t_start = time.time()
+    TIMEOUT = 5
+    while time.time() < t_start + TIMEOUT:
+        for child_pid in _get_child_pids(parent_pid):
+            ps_result = subprocess.run(["ps", child_pid], capture_output=True).stdout.decode("utf-8")
+            if "ffplay" in ps_result:
+                return child_pid
+    
+    raise TimeoutError
+    
