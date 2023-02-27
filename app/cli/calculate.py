@@ -27,6 +27,7 @@ def calculate(path: Optional[str] = typer.Argument(None), simple: bool = typer.O
     timestamp = datetime.now()
 
     if path:
+        path = os.path.join(config.get("audio_dir"), path)
         if os.path.isfile(path):
             audio_filenames = [path]
         elif os.path.isdir(path):

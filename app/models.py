@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field
 
 class AudioFile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(unique=True)
     duration: Optional[int]
     bpm: Optional[int]
     created_at: datetime
@@ -26,3 +26,11 @@ class AudioPID(SQLModel, table=True):
     ffplay_pid: str
     created_at: datetime
     updated_at: datetime
+
+
+class Profile(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(unique=True)
+    stride: float
+    mps: float
+    ideal_bpm: int

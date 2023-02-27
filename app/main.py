@@ -4,7 +4,7 @@ import signal
 import typer
 
 from app.conf import config, ROOT_DIR
-from app.cli import list, calculate, play, play_process, stop
+from app.cli import list, calculate, play, play_process, stop, calculate_profile
 
 
 def handle_sigint_clear_audiopid() -> None:
@@ -20,6 +20,7 @@ app.add_typer(calculate.app, name="calculate")
 app.add_typer(play.app, name="play")
 app.add_typer(stop.app, name="stop")
 app.add_typer(play_process.app, name="play-process")
+app.add_typer(calculate_profile.app, name="calculate-profile")
 
 @app.command()
 def hello(name: str):
