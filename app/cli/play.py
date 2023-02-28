@@ -94,7 +94,7 @@ def _play_file_pydub(filename: str, duration: int = 3, offset: int = 0) -> None:
 
 
 def _get_random_audio_file() -> str:
-    return random.choice(utils.list_audio())
+    return random.choice(utils.get_relative_audio_paths())
 
 
 def _get_audio_file_by_fileno(fileno: str) -> str:

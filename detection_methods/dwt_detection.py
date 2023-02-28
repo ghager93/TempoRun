@@ -26,12 +26,12 @@ def tempo(sig: np.ndarray, fs: float, dwt_level: int = 4, min_bpm: int = 80) -> 
     # Ensures an equal length when downsizing each filter response.
     truncated_sig = sig[:len(sig) - (len(sig) % 2 ** dwt_level)]
 
-    dwt_coeffs = __dwt(truncated_sig, dwt_level)
+    dwt_coeffs = _dwt(truncated_sig, dwt_level)
 
     # Coefficients downsampled all be an equal length of len(sig)/2**dwt_level
     dwt_coeffs_downsampled = np.array([dc[::2 ** i] for i, dc in enumerate(dwt_coeffs)])
 
-    return __dwt2bpm(dwt_coeffs_downsampled, fs, min_bpm)
+    return _dwt2bpm(dwt_coeffs_downsampled, fs, min_bpm)
 
 
 def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length: int = None,
@@ -66,18 +66,18 @@ def tempo_series(sig: np.ndarray, fs: float, win_length: int = None, hop_length:
     # Ensures an equal length when downsizing each filter response.
     truncated_sig = sig[:len(sig) - (len(sig) % 2 ** dwt_level)]
 
-    dwt_coeffs = __dwt(truncated_sig, dwt_level)
+    dwt_coeffs = _dwt(truncated_sig, dwt_level)
 
     # Coefficients downsampled all be an equal length of len(sig)/2**dwt_level
     dwt_coeffs_downsampled = [dc[::2 ** i] for i, dc in enumerate(dwt_coeffs)]
 
-    dwt_segments = [__segment(dc, downsampled_win_length, downsampled_hop_length) for dc in dwt_coeffs_downsampled]
+    dwt_segments = [_segment(dc, downsampled_win_length, downsampled_hop_length) for dc in dwt_coeffs_downsampled]
     dwt_segments = np.array(dwt_segments).transpose((1, 0, 2))
 
-    return np.array([__dwt2bpm(segment, fs, min_bpm) for segment in dwt_segments])
+    return np.array([_dwt2bpm(segment, fs, min_bpm) for segment in dwt_segments])
 
 
-def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
+def _dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
     # Estimate the tempo of a segment from its dwt coefficients.
     # Coefficients are assumed to already have been downsampled to equal length.
     # dwt_coeffs should have shape (M x N). Where M is the number of DWT filters and N is the downsampled
@@ -99,9 +99,9 @@ def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
     dwt_detrended = dwt_abs - dwt_abs.mean(axis=1)[:, None]
     dwt_sum = dwt_detrended.sum(axis=0)
 
-    dwt_autocorr = __autocorrelate(dwt_sum)
+    dwt_autocorr = _autocorrelate(dwt_sum)
 
-    lag = __find_peak_lag(dwt_autocorr, min_peak_dist, max_peak_dist)
+    lag = _find_peak_lag(dwt_autocorr, min_peak_dist, max_peak_dist)
 
     def lag2bpm(lag: int) -> int:
         bpm_unrolled = 60 * fs / (lag * 2 ** dwt_level)
@@ -110,26 +110,26 @@ def __dwt2bpm(dwt_coeffs: np.ndarray, fs: float, min_bpm: int = 80) -> int:
     return lag2bpm(lag)
 
 
-def __dwt(sig: np.ndarray, level: int = 4) -> List[np.ndarray]:
+def _dwt(sig: np.ndarray, level: int = 4) -> List[np.ndarray]:
     # Only detail coefficients are returned, thus lowest 2**level-th frequencies are discarded.
     _, *details = pywt.wavedec(sig, 'db4', mode='per', level=level)
 
     return details
 
 
-def __segment(sig: np.ndarray, win_length: int, hop_length: int) -> np.ndarray:
+def _segment(sig: np.ndarray, win_length: int, hop_length: int) -> np.ndarray:
     return np.copy(stride_tricks.sliding_window_view(sig, win_length)[::hop_length, :])
 
 
-def __autocorrelate(sig: np.ndarray) -> np.ndarray:
+def _autocorrelate(sig: np.ndarray) -> np.ndarray:
     # Returns second-half (starting at lag 0) of the auto-correlation response of sig.
     return signal.correlate(sig, sig, 'full')[len(sig) - 1:]
 
 
-def __find_peaks(arr: np.ndarray, min_dist: int = 1) -> np.ndarray:
+def _find_peaks(arr: np.ndarray, min_dist: int = 1) -> np.ndarray:
     return signal.find_peaks(arr, distance=min_dist, height=arr.mean())[0]
 
 
-def __find_peak_lag(lags: np.ndarray, min_dist, max_dist):
-    peaks = __find_peaks(lags[:2 * max_dist], min_dist // 2)
+def _find_peak_lag(lags: np.ndarray, min_dist, max_dist):
+    peaks = _find_peaks(lags[:2 * max_dist], min_dist // 2)
     return peaks[1] if len(peaks) > 1 else peaks[0]

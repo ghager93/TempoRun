@@ -10,6 +10,7 @@ import harm_perc_separator
 
 def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_window_length=None,
                  stft_window_length=None, stft_hop_length=None):
+    """Calculates the zero crossing rate of the harmonic component of a signal's power spectral density."""
     if stft_window_length is None:
         stft_window_length = int(0.03 * fs)
     if stft_hop_length is None:
@@ -27,6 +28,7 @@ def harmonic_zcr(arr, fs=22050, factor=1, h_freq_window_length=None, p_time_wind
 
 def hpr_zcr(arr, fs=22050, factor=10, h_freq_window_length=None, p_time_window_length=None,
                  stft_window_length=None, stft_hop_length=None):
+    """Calculates the zero crossing rate of the harmonic, percussive and residual components of a signal's power spectral density."""
     if stft_window_length is None:
         stft_window_length = int(0.03 * fs)
     if stft_hop_length is None:
@@ -43,6 +45,7 @@ def hpr_zcr(arr, fs=22050, factor=10, h_freq_window_length=None, p_time_window_l
 
 
 def decimate_median_filter(arr, fs=22050, decimate_fs=450, window_length=None):
+    """Resample signal with lower sampling rate and applying sliding median filter."""
     if window_length is None:
         window_length = int(0.03 * decimate_fs)
 
@@ -53,11 +56,13 @@ def decimate_median_filter(arr, fs=22050, decimate_fs=450, window_length=None):
 
 def percussive_separation(arr, fs=22050, factor=10, h_freq_window_length=None, p_time_window_length=None,
                  stft_window_length=None, stft_hop_length=None):
+    """Return percussive component of a signal."""
     return harm_perc_separator.separate_hp(arr, fs, factor, h_freq_window_length, p_time_window_length,
                                            stft_window_length, stft_hop_length)[1]
 
 
 def zero_interp(arr, factor):
+    """Interpolate with zero-value samples between original samples."""
     if factor <= 1:
         return arr
 

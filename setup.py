@@ -7,7 +7,7 @@ def _read_requirements(file):
     return requirements
 
 
-requirements = _read_requirements("requirements.txt")
+requirements = _read_requirements("requirements_deploy.txt")
 
 setup(
     name="temporun",
@@ -15,7 +15,7 @@ setup(
     author="Gerard Hager",
     author_email="ghager93@gmail.com",
     license="MIT License",
-    packages=find_packages(exclude=["test"]),
+    packages=find_packages(exclude=["test", "detection_methods"]),
     install_requires=requirements,
     entry_points={
         "console_scripts": [
