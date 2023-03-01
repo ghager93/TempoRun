@@ -1,6 +1,6 @@
 # Tempo Run
 
-Tempo Run is a command-line interface (CLI) application that analyses the tempo of music files in a directory and helps you find ideal tracks to run to.
+Tempo Run is a command-line interface (CLI) application that analyses the tempo of music files in a directory and helps you find ideal tracks to run to. The app is built on the Typer CLI library and supports the `--help` flag for all commands.
 
 Currently only works on Linux.
 
